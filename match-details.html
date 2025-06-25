@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match Players - CricketStats</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <img src="logo.png" alt="CricketStats Logo" height="40">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="matches.html">Matches</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="players.html">Players</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="py-5">
+    <div class="container">
+      <h1 class="text-center mb-4" id="match-title">Match Players</h1>
+      
+      <div class="row">
+        
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h3 id="team1-name" class="mb-0">Team 1</h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush" id="team1-players">
+                <li class="list-group-item">Loading players...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+              <h3 id="team2-name" class="mb-0">Team 2</h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush" id="team2-players">
+                <li class="list-group-item">Loading players...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <footer class="bg-dark text-white py-4">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <h5>About CricketStats</h5>
+          <p>Providing comprehensive cricket statistics and live scores.</p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <h5>Quick Links</h5>
+          <ul class="list-unstyled">
+            <li><a href="index.html" class="text-white">Home</a></li>
+            <li><a href="matches.html" class="text-white">Matches</a></li>
+            <li><a href="players.html" class="text-white">Players</a></li>
+            <li><a href="https://www.bcci.tv/" class="text-white">BCCI</a></li>
+
+          </ul>
+        </div>
+        <div class="col-md-4 mb-3">
+          <h5>Connect With BCCI on social media</h5>
+          <div class="social-icons">
+            <a href="https://www.facebook.com/IndianCricketTeam/" class="text-white me-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://x.com/BCCI" class="text-white me-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.instagram.com/indiancricketteam/" class="text-white me-2"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-white"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div class="text-center">
+        <p class="mb-0">&copy; 2025 CricketStats. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const matchId = urlParams.get('matchId');
+      const team1Name = decodeURIComponent(urlParams.get('team1') || 'Team 1');
+      const team2Name = decodeURIComponent(urlParams.get('team2') || 'Team 2');
+
+      if (!matchId) {
+        alert('No match ID provided. Redirecting to matches page.');
+        window.location.href = 'matches.html';
+        return;
+      }
+
+
+      document.getElementById('match-title').textContent = `${team1Name} vs ${team2Name} - Players`;
+      document.getElementById('team1-name').textContent = team1Name;
+      document.getElementById('team2-name').textContent = team2Name;
+
+      try {
+      
+        const [team1Players, team2Players] = await Promise.all([
+          fetchTeamPlayers(matchId, urlParams.get('team1Id')),
+          fetchTeamPlayers(matchId, urlParams.get('team2Id'))
+        ]);
+
+
+        displayPlayers(team1Players, 'team1-players');
+        displayPlayers(team2Players, 'team2-players');
+
+      } catch (error) {
+        console.error('Error loading players:', error);
+        document.getElementById('team1-players').innerHTML = 
+          '<li class="list-group-item text-danger">Error loading players</li>';
+        document.getElementById('team2-players').innerHTML = 
+          '<li class="list-group-item text-danger">Error loading players</li>';
+      }
+    });
+
+    async function fetchTeamPlayers(matchId, teamId) {
+      if (!teamId) {
+        throw new Error('Team ID not provided');
+      }
+
+      const response = await fetch(`https://cricbuzz-cricket.p.rapidapi.com/mcenter/v1/${matchId}/team/${teamId}`, {
+        headers: {
+          'x-rapidapi-key': '6bb2dfcf9amshb5bd48348a98da6p1317c2jsn537a4af5b5e5',
+          'x-rapidapi-host': 'cricbuzz-cricket.p.rapidapi.com'
+        }
+      });
+
+      const data = await response.json();
+      return data.players?.['playing XI'] || [];
+    }
+
+    function displayPlayers(players, elementId) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = '';
+
+      if (players.length === 0) {
+        container.innerHTML = '<li class="list-group-item">No players data available</li>';
+        return;
+      }
+
+      players.forEach(player => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+          <div>
+            <strong>${player.name}</strong>
+            <div class="text-muted small">${player.role} • ${player.battingStyle}${player.bowlingStyle ? ' • ' + player.bowlingStyle : ''}</div>
+          </div>
+        `;
+        container.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
