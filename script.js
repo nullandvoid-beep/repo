@@ -1,6 +1,6 @@
 
 const API_BASE_URL = 'https://cricbuzz-cricket.p.rapidapi.com';
-const API_KEY = '6bb2dfcf9amshb5bd48348a98da6p1317c2jsn537a4af5b5e5'; 
+const API_KEY = '170388c9a9msh24c8e3b87eeb13bp16a9d3jsn1482029af775'; 
 
 const headers = {
   'x-rapidapi-key': API_KEY,
